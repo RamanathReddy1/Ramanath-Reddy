@@ -1,0 +1,123 @@
+---
+title: "506Project"
+author: "Ramnath Reddy"
+date: "April 15, 2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Bike Vendors Project
+
+There are different models from each bike vendor. These bike models are categorized based on its usage,frame, price and mode. The objective of this project is to analyze this bike vendor dataset to generate any insights on price variation of different models across different locations. The visualization tools will be used to develop correlation among the different parameters accordingly.
+
+
+## Getting Started
+
+Download the bikevendors.csv file into your local machine. Then load this dataset into Rstudio.
+
+```{r}
+bikevendors<-read.csv('F:/THESIS/Tanya/R-Folder/data/bikevendors.csv')
+anyDuplicated(bikevendors)
+
+```
+
+Exploring raw data to clean it for further use
+
+```{r}
+head(bikevendors)
+tail(bikevendors)
+str(bikevendors)
+```
+
+# Check the class of bikevendors
+```{r}
+class(bikevendors)
+```
+
+# Check the dimensions
+
+```{r}
+dim(bikevendors)
+```
+
+# View the column names 
+```{r}
+colnames(bikevendors)
+```
+
+```{r}
+library(dplyr)
+#check the structure of bikevendors
+glimpse(bikevendors)
+```
+
+```{r}
+summary(bikevendors)
+```
+
+Basic visualizations
+
+```{r}
+hist(bikevendors$price)
+plot(bikevendors$category1,bikevendors$price)
+plot(bikevendors$frame,bikevendors$price)
+```
+
+#Subset the data using dplyr to include only carbon framed mountain sports bikes
+
+```{r}
+bikevendors_new<-filter(bikevendors, bikevendors$category1 == "Mountain"& bikevendors$category2 == "Sport" & bikevendors$frame == "Aluminum")
+```
+
+#Finding count of bikes
+
+```{r}
+bikeCount<- bikevendors %>% group_by(category2) %>% summarize(count = n()) %>% arrange(count)
+bikeCount
+```
+
+```{r}
+library(ggplot2)
+g1<- ggplot(bikevendors, aes(category2, fill= category2))
+g1+geom_bar(aes()) + ggtitle("Bar Plot Showing The Different bikes")
+```
+
+```{r}
+d1<- ggplot(bikevendors, aes(category2))
+d1 + geom_bar(aes(fill= category1), width = 0.5)
+labs(title="Histogram Showing composition of different bikes")
+```
+
+```{r}
+library(rgdal)
+library(leaflet)
+library(dplyr)
+library(mapview)
+```
+```{r}
+plot(bikevendors$model,bikevendors$price, main = "Price variation across models")
+```
+
+When the price of the model by the vendor is zero, i assumed this model is either not available for purchase in this region. 
+
+```{r}
+bikecompetition<-bikevendors
+bikecompetition[bikecompetition==0]<- NA
+bikecompete<-bikecompetition[complete.cases(bikecompetition),]
+head(bikecompete)
+```
+
+
+
+```{r}
+a<-bikevendors %>% filter(price>1000)
+b<-bikevendors %>% filter(category1=="Road")
+c<-bikevendors %>% filter(model=="Catalyst 1")
+d<-bikevendors %>% filter(category2=="Sport")
+```
+
+
+
