@@ -1,0 +1,185 @@
+---
+title: "506Project"
+author: "Ramnath Reddy"
+date: "April 15, 2019"
+output: html_document
+
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Bike Vendors Project
+
+There are different models from each bike vendor. These bike models are categorized based on its usage,frame, price and mode. The objective of this project is to analyze this bike vendor dataset to generate any insights on price variation of different models across differnt vendors. The visualization tools will be used to develop correlation among the different parameters accordingly. 
+
+There are a total of 97 different bike models and available at each of the 30 bike vendor. The value in each row of the bike vendor column represent the percentage of the model against the total bikes at the vendor. For example, Bad Habit 1 model contribute 1.74% of the total bikes available at Albuquerque Cycles at the time of the data collection. 
+
+# Research Questions
+
+1. What is mean and maximum price of the bikes?
+2. What is the relationship between price and bike types? 
+3. Which type of bikes are largest in number within the sample?
+4. How many models fulfill this condition: carbon framed mountain sports?
+5. What models are largest in number at Tampa.29ers? 
+
+
+## Getting Started
+
+Download the bikevendors.csv file into your local machine. Then load this dataset into Rstudio.
+
+```{r}
+bikevendors<-read.csv('F:/THESIS/Tanya/R-Folder/data/bikevendors.csv')
+anyDuplicated(bikevendors)
+
+```
+
+Exploring raw data to clean it for further use
+
+```{r}
+head(bikevendors)
+```
+
+# Check the class of bikevendors
+```{r}
+class(bikevendors)
+```
+
+# Check the dimensions
+
+```{r}
+dim(bikevendors)
+```
+
+# View the column names 
+```{r}
+colnames(bikevendors)
+```
+
+```{r}
+library(dplyr)
+#check the structure of bikevendors
+glimpse(bikevendors)
+```
+
+```{r}
+summary(bikevendors)
+```
+
+Answer1: The mean price of the bike model is $3200 and maximum price is $12790.
+
+
+#Basic visualizations
+
+```{r}
+hist(bikevendors$price)
+
+```
+
+From this histogram, we can conclude that there are highest number of bike models in the sample size within the price range of $2000-$4000. 
+
+```{r}
+plot(bikevendors$frame,bikevendors$price)
+```
+
+Answer 2: There are two types of bikes namely with Aluminium and Carbon frame.The box plot provided an overview of the price differentiation in each frame type. We can notice that the price delta in aluminium is less compared to the large deviation in price within bikes with carbon frame. There is one outlier what did not belong within the range in either bike types accordingly. 
+
+```{r}
+plot(bikevendors$category1,bikevendors$price)
+```
+
+Similarly, we can see the price deviation is large in mountain bikes compared with the road bikes with their outliers accordingly. 
+
+#Subset the data to include only aluminum framed mountain sports bikes
+
+```{r}
+bikevendors_new<-subset(bikevendors, bikevendors$category1 == "Mountain"& bikevendors$category2 == "Sport" & bikevendors$frame == "Aluminum")
+head(bikevendors_new)
+```
+
+Here we can filter out only bike models based on certain conditions for further analysis. 
+
+
+#Finding count of bikes
+
+```{r}
+bikeCount<- bikevendors %>% group_by(category2) %>% summarize(count = n()) %>% arrange(count)
+bikeCount
+```
+
+Answer 3: Here using the groupby() and arrange() functions, we were able to find the count of each bike models and also arrange them in ascending order. There are only two fat bikes and 21 elite road bike types in the sample. 
+
+
+```{r}
+library(ggplot2)
+g1<- ggplot(bikevendors, aes(category1, fill= category2))
+g1+geom_bar(aes()) + ggtitle("Stacked bar plot Showing The Different bikes")
+```
+
+From this diagram, it is very clear that there are high proportion of endurance road bikes in the road category. Likewise, cross country race bikes fall under mountain category. 
+
+```{r}
+d1<- ggplot(bikevendors, aes(category2))
+d1 + geom_density(aes(fill= category1), width = 0.5)+
+labs(title="Density graph Showing composition of different bikes")
+```
+
+In this diagram, the different types of bike models are categorized based on category1. We find that the there are high number of mountain bikes compared to road bikes in this sample. 
+
+```{r}
+ggplot(data = bikevendors, aes(category2))+geom_bar()+facet_grid(category1~.) + ggtitle("Facet grid plot Showing The Different bikes")
+```
+
+From this diagram, we can say that the cross country bikes are highest in mountain category and elite road bikes in the road category. 
+
+
+```{r}
+library(rgdal)
+library(leaflet)
+library(dplyr)
+library(mapview)
+```
+```{r}
+plot(bikevendors$model,bikevendors$price, main = "Price variation across models")
+```
+We have plotted the price of each bike model and found that the SuperX and Synapse models have lowest standard deviation in the prices compared to other models. 
+ 
+
+```{r}
+bikecompetition<-bikevendors
+bikecompetition[bikecompetition==0]<- NA
+bikecompete<-bikecompetition[complete.cases(bikecompetition),]
+head(bikecompete)
+```
+When the price of the model by the vendor is zero, i assumed this model is either not available for purchase in this region.From this analysis, only four bike models (Bad Habit 1, CAAD 12 Red, Supersix Evo and Synapse Carbon Ultegra 3) are available or sold by all the 30 bike vendors. 
+
+```{r}
+apply(bikevendors, 2, function(x) max(x, na.rm = TRUE))
+Tampa.29ersmodels<-subset(bikevendors, bikevendors$Tampa.29ers== max(bikevendors$Tampa.29ers,na.rm = TRUE))
+Tampa.29ersmodels$model
+```
+
+From this we can find out the two bike models (Catalyst 4 & Jekyll Carbon 4) each have 4.86% share of the total bikes at the Tampa.29ers. 
+
+#Filtering the dataset as per specific conditions
+
+```{r}
+a<-bikevendors %>% filter(price>3000)
+b<-bikevendors %>% filter(category1=="Road")
+c<-bikevendors %>% filter(model=="Catalyst 1")
+d<-bikevendors %>% filter(category2=="Sport")
+```
+
+
+
+```{r}
+pie(bikevendors$Albuquerque.Cycles, main = "Bike Model share")
+```
+
+From this we can notice that models # 10 & 49 have the largest share in the inventory at Albuquerque.Cycles
+
+```{r}
+cor.test(bikevendors$Albuquerque.Cycles,bikevendors$Austin.Cruisers)
+```
+
